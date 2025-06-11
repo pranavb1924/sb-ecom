@@ -7,6 +7,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CategoryServiceImpl implements CategoryService{
@@ -36,12 +37,17 @@ public class CategoryServiceImpl implements CategoryService{
     }
 
     @Override
-    public String updateCategory(Category updatedCategory) {
-        Category category = categories.stream().filter(cat -> cat.getCategoryId().equals(updatedCategory.getCategoryId())).findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found"));
-        if (category != null) {
-            category.setCategoryId(updatedCategory.getCategoryId());
-            category.setCategoryName(updatedCategory.getCategoryName());
+    public Category updateCategory(Category category, Long categoryId) {
+        Optional<Category> optionalCategory = categories.stream()
+                .filter(c -> c.getCategoryId().equals(categoryId))
+                .findFirst();
+
+        if(optionalCategory.isPresent()){
+            Category existingCategory = optionalCategory.get();
+            existingCategory.setCategoryName(category.getCategoryName());
+            return existingCategory;
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found");
         }
-        return "Category with categoryId: " + updatedCategory.getCategoryId() + " updated successfully !!";
     }
 }
